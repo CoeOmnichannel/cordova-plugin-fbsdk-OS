@@ -53,8 +53,8 @@
             <preference name="android-minSdkVersion" value="15" />
         </config-file>
 
-        <source-file src="src/android/facebookconnect.xml" target-dir="res/values" />
-        <config-file target="app/src/main/res/values/facebookconnect.xml" parent="/*">
+        <source-file src="src/android/facebookconnectfbsdk.xml" target-dir="res/values" />
+        <config-file target="app/src/main/res/values/facebookconnectfbsdk.xml" parent="/*">
             <string name="fb_app_id">$APP_ID</string>
             <string name="fb_client_token">$CLIENT_TOKEN</string>
             <string name="fb_app_name">$APP_NAME</string>
@@ -86,7 +86,7 @@
         <framework src="com.facebook.android:facebook-android-sdk:$FACEBOOK_ANDROID_SDK_VERSION"/>
 
         <!-- cordova plugin src files -->
-        <source-file src="src/android/ConnectPlugin.java" target-dir="src/org/apache/cordova/facebook" />
+        <source-file src="src/android/ConnectPluginFbsdk.java" target-dir="src/org/apache/cordova/facebook" />
 
     </platform>
 

@@ -58,7 +58,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-public class ConnectPlugin extends CordovaPlugin {
+public class ConnectPluginFbsdk extends CordovaPlugin {
 
     private static final int INVALID_ERROR_CODE = -2; //-1 is FacebookRequestError.INVALID_ERROR_CODE
     @SuppressWarnings("serial")
