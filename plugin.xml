@@ -42,7 +42,7 @@
 
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="FacebookConnectPlugin">
-                <param name="android-package" value="org.apache.cordova.facebook.ConnectPlugin" />
+                <param name="android-package" value="org.apache.cordova.facebook.ConnectPluginFbsdk" />
                 <param name="onload" value="true" />
             </feature>
             <access origin="https://m.facebook.com" />
@@ -53,7 +53,6 @@
             <preference name="android-minSdkVersion" value="15" />
         </config-file>
 
-        <!--source-file src="src/android/facebookconnectfbsdk.xml" target-dir="res/values" /-->
         <config-file parent="/resources" target="./res/values/strings.xml">
             <string name="fb_app_id">$APP_ID</string>
             <string name="fb_client_token">$CLIENT_TOKEN</string>
@@ -62,15 +61,6 @@
             <bool name="fb_hybrid_app_events">$FACEBOOK_HYBRID_APP_EVENTS</bool>
             <bool name="fb_advertiser_id_collection_enabled">$FACEBOOK_ADVERTISER_ID_COLLECTION</bool>
         </config-file>
-
-        <!--config-file target="app/src/main/res/values/facebookconnectfbsdk.xml" parent="/*">
-            <string name="fb_app_id">$APP_ID</string>
-            <string name="fb_client_token">$CLIENT_TOKEN</string>
-            <string name="fb_app_name">$APP_NAME</string>
-            <bool name="fb_auto_log_app_events_enabled">$FACEBOOK_AUTO_LOG_APP_EVENTS</bool>
-            <bool name="fb_hybrid_app_events">$FACEBOOK_HYBRID_APP_EVENTS</bool>
-            <bool name="fb_advertiser_id_collection_enabled">$FACEBOOK_ADVERTISER_ID_COLLECTION</bool>
-        </config-file-->
 
         <config-file target="AndroidManifest.xml" parent="/*">
             <queries>
