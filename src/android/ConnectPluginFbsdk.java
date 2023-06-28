@@ -63,7 +63,7 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
 
     private static final int INVALID_ERROR_CODE = -2; //-1 is FacebookRequestError.INVALID_ERROR_CODE
 
-    private final String TAG = "ConnectPluginFbsdk";
+    private final String TAG = "EventsConnectPluginFbsdk";
 
     private CallbackManager callbackManager;
     private AppEventsLogger logger;
@@ -79,6 +79,14 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
 
     @Override
     protected void pluginInitialize() {
+
+        //Force SDK Variables variables
+        FacebookSdk.setApplicationId(getStringByIdName("events_fb_app_id"));
+        FacebookSdk.setClientToken(getStringByIdName("events_fb_client_token"));
+        FacebookSdk.setApplicationName(getStringByIdName("events_fb_app_name"));
+        FacebookSdk.setAutoLogAppEventsEnabled(getBooleanByIdName("events_fb_auto_log_app_events_enabled"));
+        FacebookSdk.setAdvertiserIDCollectionEnabled(getBooleanByIdName("events_fb_advertiser_id_collection_enabled"));
+        
         FacebookSdk.sdkInitialize(cordova.getActivity().getApplicationContext());
 
         // create callbackManager
@@ -607,7 +615,7 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
 
         if (declinedPermission != null) {
             callbackContext.error("This request needs declined permission: " + declinedPermission);
-			return;
+            return;
         }
 
         cordova.setActivityResultCallback(this);
@@ -849,7 +857,7 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
         try {
             Context appContext = cordova.getActivity().getApplicationContext();
             Resources res = appContext.getResources();
-            int enableHybridAppEventsId = res.getIdentifier("fb_hybrid_app_events", "bool", appContext.getPackageName());
+            int enableHybridAppEventsId = res.getIdentifier("events_fb_hybrid_app_events", "bool", appContext.getPackageName());
             boolean enableHybridAppEvents = enableHybridAppEventsId != 0 && res.getBoolean(enableHybridAppEventsId);
             if (enableHybridAppEvents) {
                 AppEventsLogger.augmentWebView((WebView) this.webView.getView(), appContext);
@@ -869,7 +877,7 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
         } else {
             try {
                 byte[] photoImageData = Base64.decode(paramBundle.get("photo_image"), Base64.DEFAULT);
-                Bitmap image = BitmapFactory.decodeByteArray(photoImageData, 0, photoImageData.length); 
+                Bitmap image = BitmapFactory.decodeByteArray(photoImageData, 0, photoImageData.length);
                 photoBuilder.setBitmap(image).setUserGenerated(true);
             } catch (Exception e) {
                 Log.d(TAG, "photo_image cannot be decoded");
@@ -900,10 +908,10 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
     private boolean hasAccessToken() {
         AccessToken token = AccessToken.getCurrentAccessToken();
 
-		if (token == null)
-			return false;
+        if (token == null)
+            return false;
 
-		return !token.isExpired();
+        return !token.isExpired();
     }
 
     private void handleError(FacebookException exception, CallbackContext context) {
@@ -977,6 +985,12 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
         return res.getString(res.getIdentifier(idName, "string", cordova.getActivity().getApplicationContext().getPackageName()));
     }
 
+    private boolean getBooleanByIdName(String idName) {
+        Resources res = cordova.getActivity().getApplicationContext().getResources();
+        return res.getBoolean(res.getIdentifier(idName, "string", cordova.getActivity().getApplicationContext().getPackageName()));
+    }
+
+
     /**
      * Create a Facebook Response object that matches the one for the Javascript SDK
      * @return JSONObject - the response object
@@ -990,18 +1004,18 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
             Date today = new Date();
             long expiresTimeInterval = (accessToken.getExpires().getTime() - today.getTime()) / 1000L;
             response = "{"
-                + "\"status\": \"connected\","
-                + "\"authResponse\": {"
-                + "\"accessToken\": \"" + accessToken.getToken() + "\","
-                + "\"data_access_expiration_time\": \"" + Math.max(dataAccessExpirationTimeInterval, 0) + "\","
-                + "\"expiresIn\": \"" + Math.max(expiresTimeInterval, 0) + "\","
-                + "\"userID\": \"" + accessToken.getUserId() + "\""
-                + "}"
-                + "}";
+                    + "\"status\": \"connected\","
+                    + "\"authResponse\": {"
+                    + "\"accessToken\": \"" + accessToken.getToken() + "\","
+                    + "\"data_access_expiration_time\": \"" + Math.max(dataAccessExpirationTimeInterval, 0) + "\","
+                    + "\"expiresIn\": \"" + Math.max(expiresTimeInterval, 0) + "\","
+                    + "\"userID\": \"" + accessToken.getUserId() + "\""
+                    + "}"
+                    + "}";
         } else {
             response = "{"
-                + "\"status\": \"unknown\""
-                + "}";
+                    + "\"status\": \"unknown\""
+                    + "}";
         }
         try {
             return new JSONObject(response);
@@ -1014,9 +1028,9 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
     public JSONObject getFacebookRequestErrorResponse(FacebookRequestError error) {
 
         String response = "{"
-            + "\"errorCode\": \"" + error.getErrorCode() + "\","
-            + "\"errorType\": \"" + error.getErrorType() + "\","
-            + "\"errorMessage\": \"" + error.getErrorMessage() + "\"";
+                + "\"errorCode\": \"" + error.getErrorCode() + "\","
+                + "\"errorType\": \"" + error.getErrorType() + "\","
+                + "\"errorMessage\": \"" + error.getErrorMessage() + "\"";
 
         if (error.getErrorUserMessage() != null) {
             response += ",\"errorUserMessage\": \"" + error.getErrorUserMessage() + "\"";
@@ -1065,7 +1079,7 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
         }
         return new JSONObject();
     }
-    
+
     public JSONObject getProfile() {
         String response;
         final Profile profile = Profile.getCurrentProfile();
@@ -1073,10 +1087,10 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
             response = "{}";
         } else {
             response = "{"
-                + "\"userID\": \"" + profile.getId() + "\","
-                + "\"firstName\": \"" + profile.getFirstName() + "\","
-                + "\"lastName\": \"" + profile.getLastName() + "\""
-                + "}";
+                    + "\"userID\": \"" + profile.getId() + "\","
+                    + "\"firstName\": \"" + profile.getFirstName() + "\","
+                    + "\"lastName\": \"" + profile.getLastName() + "\""
+                    + "}";
         }
         try {
             return new JSONObject(response);
