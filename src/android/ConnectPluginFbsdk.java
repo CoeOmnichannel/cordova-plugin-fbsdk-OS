@@ -84,8 +84,8 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
         FacebookSdk.setApplicationId(getStringByIdName("events_fb_app_id"));
         FacebookSdk.setClientToken(getStringByIdName("events_fb_client_token"));
         FacebookSdk.setApplicationName(getStringByIdName("events_fb_app_name"));
-        FacebookSdk.setAutoLogAppEventsEnabled(getBooleanByIdName("events_fb_auto_log_app_events_enabled"));
-        FacebookSdk.setAdvertiserIDCollectionEnabled(getBooleanByIdName("events_fb_advertiser_id_collection_enabled"));
+        FacebookSdk.setAutoLogAppEventsEnabled(getStringByIdName("events_fb_auto_log_app_events_enabled").equals("true"));
+        FacebookSdk.setAdvertiserIDCollectionEnabled(getStringByIdName("events_fb_advertiser_id_collection_enabled").equals("true"));
         
         FacebookSdk.sdkInitialize(cordova.getActivity().getApplicationContext());
 
@@ -984,12 +984,6 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
         Resources res = cordova.getActivity().getApplicationContext().getResources();
         return res.getString(res.getIdentifier(idName, "string", cordova.getActivity().getApplicationContext().getPackageName()));
     }
-
-    private boolean getBooleanByIdName(String idName) {
-        Resources res = cordova.getActivity().getApplicationContext().getResources();
-        return res.getBoolean(res.getIdentifier(idName, "string", cordova.getActivity().getApplicationContext().getPackageName()));
-    }
-
 
     /**
      * Create a Facebook Response object that matches the one for the Javascript SDK

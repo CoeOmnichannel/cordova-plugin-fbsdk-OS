@@ -57,9 +57,9 @@
             <string name="events_fb_app_id">$EVENTS_APP_ID</string>
             <string name="events_fb_client_token">$EVENTS_CLIENT_TOKEN</string>
             <string name="events_fb_app_name">$EVENTS_APP_NAME</string>
-            <bool name="events_fb_auto_log_app_events_enabled">$EVENTS_FACEBOOK_AUTO_LOG_APP_EVENTS</bool>
-            <bool name="events_fb_hybrid_app_events">$EVENTS_FACEBOOK_HYBRID_APP_EVENTS</bool>
-            <bool name="events_fb_advertiser_id_collection_enabled">$EVENTS_FACEBOOK_ADVERTISER_ID_COLLECTION</bool>
+            <string name="events_fb_auto_log_app_events_enabled">$EVENTS_FACEBOOK_AUTO_LOG_APP_EVENTS</string>
+            <string name="events_fb_hybrid_app_events">$EVENTS_FACEBOOK_HYBRID_APP_EVENTS</string>
+            <string name="events_fb_advertiser_id_collection_enabled">$EVENTS_FACEBOOK_ADVERTISER_ID_COLLECTION</string>
         </config-file>
 
         <config-file target="AndroidManifest.xml" parent="/*">
