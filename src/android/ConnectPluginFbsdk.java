@@ -11,8 +11,11 @@ import android.util.Base64;
 import android.util.Log;
 import android.webkit.WebView;
 
+import androidx.annotation.NonNull;
+
 import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
+import com.facebook.FacebookAuthorizationException;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookDialogException;
 import com.facebook.FacebookException;
@@ -21,9 +24,7 @@ import com.facebook.FacebookRequestError;
 import com.facebook.FacebookSdk;
 import com.facebook.FacebookServiceException;
 import com.facebook.GraphRequest;
-import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
-import com.facebook.FacebookAuthorizationException;
 import com.facebook.Profile;
 import com.facebook.appevents.AppEventsLogger;
 import com.facebook.applinks.AppLinkData;
@@ -49,27 +50,20 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.net.URLDecoder;
-import java.util.Collection;
 import java.util.Currency;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 public class ConnectPluginFbsdk extends CordovaPlugin {
 
     private static final int INVALID_ERROR_CODE = -2; //-1 is FacebookRequestError.INVALID_ERROR_CODE
-    @SuppressWarnings("serial")
-    private static final Set<String> OTHER_PUBLISH_PERMISSIONS = new HashSet<String>() {
-        {
-            add("ads_management");
-            add("create_event");
-            add("rsvp_event");
-        }
-    };
-    private final String TAG = "ConnectPlugin";
+
+    private final String TAG = "ConnectPluginFbsdk";
 
     private CallbackManager callbackManager;
     private AppEventsLogger logger;
@@ -99,35 +93,32 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
         LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(final LoginResult loginResult) {
-                GraphRequest.newMeRequest(loginResult.getAccessToken(), new GraphRequest.GraphJSONObjectCallback() {
-                    @Override
-                    public void onCompleted(JSONObject jsonObject, GraphResponse response) {
-                        if (response.getError() != null) {
-                            if (lastGraphContext != null) {
-                                lastGraphContext.error(getFacebookRequestErrorResponse(response.getError()));
-                            } else if (loginContext != null) {
-                                loginContext.error(getFacebookRequestErrorResponse(response.getError()));
-                            }
-                            return;
-                        }
-
-                        // If this login comes after doing a new permission request
-                        // make the outstanding graph call
+                GraphRequest.newMeRequest(loginResult.getAccessToken(), (jsonObject, response) -> {
+                    if (response != null && response.getError() != null) {
                         if (lastGraphContext != null) {
-                            makeGraphCall(lastGraphContext, lastGraphRequestMethod);
-                            return;
+                            lastGraphContext.error(getFacebookRequestErrorResponse(response.getError()));
+                        } else if (loginContext != null) {
+                            loginContext.error(getFacebookRequestErrorResponse(response.getError()));
                         }
+                        return;
+                    }
 
-                        if (loginContext != null) {
-                            Log.d(TAG, "returning login object " + jsonObject.toString());
-                            loginContext.success(getResponse());
-                            loginContext = null;
-                        }
+                    // If this login comes after doing a new permission request
+                    // make the outstanding graph call
+                    if (lastGraphContext != null) {
+                        makeGraphCall(lastGraphContext, lastGraphRequestMethod);
+                        return;
+                    }
 
-                        if (reauthorizeContext != null) {
-                            reauthorizeContext.success(getResponse());
-                            reauthorizeContext = null;
-                        }
+                    if (loginContext != null) {
+                        Log.d(TAG, "returning login object " + jsonObject);
+                        loginContext.success(getResponse());
+                        loginContext = null;
+                    }
+
+                    if (reauthorizeContext != null) {
+                        reauthorizeContext.success(getResponse());
+                        reauthorizeContext = null;
                     }
                 }).executeAsync();
             }
@@ -146,8 +137,8 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
             }
 
             @Override
-            public void onError(FacebookException e) {
-                Log.e("Activity", String.format("Error: %s", e.toString()));
+            public void onError(@NonNull FacebookException e) {
+                Log.e("Activity", String.format("Error: %s", e));
                 if (loginContext != null) {
                     handleError(e, loginContext);
                     loginContext = null;
@@ -183,8 +174,8 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
             }
 
             @Override
-            public void onError(FacebookException e) {
-                Log.e("Activity", String.format("Error: %s", e.toString()));
+            public void onError(@NonNull FacebookException e) {
+                Log.e("Activity", String.format("Error: %s", e));
                 handleError(e, showDialogContext);
             }
         });
@@ -206,8 +197,8 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
             }
 
             @Override
-            public void onError(FacebookException e) {
-                Log.e("Activity", String.format("Error: %s", e.toString()));
+            public void onError(@NonNull FacebookException e) {
+                Log.e("Activity", String.format("Error: %s", e));
                 handleError(e, showDialogContext);
             }
         });
@@ -237,8 +228,8 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
             }
 
             @Override
-            public void onError(FacebookException e) {
-                Log.e("Activity", String.format("Error: %s", e.toString()));
+            public void onError(@NonNull FacebookException e) {
+                Log.e("Activity", String.format("Error: %s", e));
                 handleError(e, showDialogContext);
             }
         });
@@ -260,123 +251,124 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
 
     @Override
     public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
-        if (action.equals("getApplicationId")) {
-            callbackContext.success(FacebookSdk.getApplicationId());
-            return true;
 
-        } else if (action.equals("setApplicationId")) {
-            executeSetApplicationId(args, callbackContext);
-            return true;
+        //force variables 
 
-        } else if (action.equals("getClientToken")) {
-            callbackContext.success(FacebookSdk.getClientToken());
-            return true;
+        switch (action) {
+            case "getApplicationId":
+                callbackContext.success(FacebookSdk.getApplicationId());
+                return true;
 
-        } else if (action.equals("setClientToken")) {
-            executeSetClientToken(args, callbackContext);
-            return true;
+            case "setApplicationId":
+                executeSetApplicationId(args, callbackContext);
+                return true;
 
-        } else if (action.equals("getApplicationName")) {
-            callbackContext.success(FacebookSdk.getApplicationName());
-            return true;
+            case "getClientToken":
+                callbackContext.success(FacebookSdk.getClientToken());
+                return true;
 
-        } else if (action.equals("setApplicationName")) {
-            executeSetApplicationName(args, callbackContext);
-            return true;
+            case "setClientToken":
+                executeSetClientToken(args, callbackContext);
+                return true;
 
-        } else if (action.equals("login")) {
-            executeLogin(args, callbackContext);
-            return true;
+            case "getApplicationName":
+                callbackContext.success(FacebookSdk.getApplicationName());
+                return true;
 
-        } else if (action.equals("checkHasCorrectPermissions")) {
-            executeCheckHasCorrectPermissions(args, callbackContext);
-            return true;
+            case "setApplicationName":
+                executeSetApplicationName(args, callbackContext);
+                return true;
 
-        } else if (action.equals("isDataAccessExpired")) {
-            if (hasAccessToken()) {
-                callbackContext.success(AccessToken.getCurrentAccessToken().isDataAccessExpired() ? "true" : "false");
-            } else {
-                callbackContext.error("Session not open.");
-            }
-            return true;
+            case "login":
+                executeLogin(args, callbackContext);
+                return true;
 
-        } else if (action.equals("reauthorizeDataAccess")) {
-            executeReauthorizeDataAccess(args, callbackContext);
-            return true;
+            case "checkHasCorrectPermissions":
+                executeCheckHasCorrectPermissions(args, callbackContext);
+                return true;
 
-        } else if (action.equals("logout")) {
-            if (hasAccessToken()) {
-                LoginManager.getInstance().logOut();
-            }
-            callbackContext.success();
-            return true;
+            case "isDataAccessExpired":
+                if (hasAccessToken()) {
+                    callbackContext.success(Objects.requireNonNull(AccessToken.getCurrentAccessToken()).isDataAccessExpired() ? "true" : "false");
+                } else {
+                    callbackContext.error("Session not open.");
+                }
+                return true;
 
-        } else if (action.equals("getLoginStatus")) {
-            executeGetLoginStatus(args, callbackContext);
-            return true;
+            case "reauthorizeDataAccess":
+                executeReauthorizeDataAccess(callbackContext);
+                return true;
 
-        } else if (action.equals("getAccessToken")) {
-            if (hasAccessToken()) {
-                callbackContext.success(AccessToken.getCurrentAccessToken().getToken());
-            } else {
-                // Session not open
-                callbackContext.error("Session not open.");
-            }
-            return true;
+            case "logout":
+                if (hasAccessToken()) {
+                    LoginManager.getInstance().logOut();
+                }
+                callbackContext.success();
+                return true;
 
-        } else if(action.equals("setAutoLogAppEventsEnabled")) {
-            executeSetAutoLogAppEventsEnabled(args, callbackContext);
-            return true;
+            case "getLoginStatus":
+                executeGetLoginStatus(args, callbackContext);
+                return true;
 
-        } else if(action.equals("setAdvertiserIDCollectionEnabled")) {
-            executeSetAdvertiserIDCollectionEnabled(args, callbackContext);
-            return true;
+            case "getAccessToken":
+                if (hasAccessToken()) {
+                    callbackContext.success(Objects.requireNonNull(AccessToken.getCurrentAccessToken()).getToken());
+                } else {
+                    // Session not open
+                    callbackContext.error("Session not open.");
+                }
+                return true;
 
-        } else if(action.equals("setDataProcessingOptions")) {
-            executeSetDataProcessingOptions(args, callbackContext);
-            return true;
+            case "setAutoLogAppEventsEnabled":
+                executeSetAutoLogAppEventsEnabled(args, callbackContext);
+                return true;
 
-        } else if (action.equals("setUserData")) {
-            executeSetUserData(args, callbackContext);
-            return true;
+            case "setAdvertiserIDCollectionEnabled":
+                executeSetAdvertiserIDCollectionEnabled(args, callbackContext);
+                return true;
 
-        } else if (action.equals("clearUserData")) {
-            executeClearUserData(args, callbackContext);
-            return true;
+            case "setDataProcessingOptions":
+                executeSetDataProcessingOptions(args, callbackContext);
+                return true;
 
-        } else if (action.equals("logEvent")) {
-            executeLogEvent(args, callbackContext);
-            return true;
+            case "setUserData":
+                executeSetUserData(args, callbackContext);
+                return true;
 
-        } else if (action.equals("logPurchase")) {
-            executeLogPurchase(args, callbackContext);
-            return true;
+            case "clearUserData":
+                executeClearUserData(callbackContext);
+                return true;
 
-        } else if (action.equals("showDialog")) {
-            executeDialog(args, callbackContext);
-            return true;
+            case "logEvent":
+                executeLogEvent(args, callbackContext);
+                return true;
 
-        } else if (action.equals("getCurrentProfile")) {
-            executeGetCurrentProfile(args, callbackContext);
+            case "logPurchase":
+                executeLogPurchase(args, callbackContext);
+                return true;
 
-            return true;
-        } else if (action.equals("graphApi")) {
-            executeGraph(args, callbackContext);
+            case "showDialog":
+                executeDialog(args, callbackContext);
+                return true;
 
-            return true;
-        } else if (action.equals("getDeferredApplink")) {
-            executeGetDeferredApplink(args, callbackContext);
-            return true;
-        } else if (action.equals("activateApp")) {
-            cordova.getThreadPool().execute(new Runnable() {
-                @Override
-                public void run() {
+            case "getCurrentProfile":
+                executeGetCurrentProfile(callbackContext);
+
+                return true;
+            case "graphApi":
+                executeGraph(args, callbackContext);
+
+                return true;
+            case "getDeferredApplink":
+                executeGetDeferredAppLink(callbackContext);
+                return true;
+            case "activateApp":
+                cordova.getThreadPool().execute(() -> {
                     AppEventsLogger.activateApp(cordova.getActivity().getApplication());
                     callbackContext.success();
-                }
-            });
+                });
 
-            return true;
+                return true;
         }
         return false;
     }
@@ -429,28 +421,22 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
         }
     }
 
-    private void executeGetDeferredApplink(JSONArray args,
-                                           final CallbackContext callbackContext) {
+    private void executeGetDeferredAppLink(final CallbackContext callbackContext) {
         AppLinkData.fetchDeferredAppLinkData(cordova.getActivity().getApplicationContext(),
-                new AppLinkData.CompletionHandler() {
-                    @Override
-                    public void onDeferredAppLinkDataFetched(
-                            AppLinkData appLinkData) {
-                        PluginResult pr;
-                        if (appLinkData == null) {
-                            pr = new PluginResult(PluginResult.Status.OK, "");
-                        } else {
-                            pr = new PluginResult(PluginResult.Status.OK, appLinkData.getTargetUri().toString());
-                        }
-
-                        callbackContext.sendPluginResult(pr);
-                        return;
+                appLinkData -> {
+                    PluginResult pr;
+                    if (appLinkData == null) {
+                        pr = new PluginResult(PluginResult.Status.OK, "");
+                    } else {
+                        pr = new PluginResult(PluginResult.Status.OK, Objects.requireNonNull(appLinkData.getTargetUri()).toString());
                     }
+
+                    callbackContext.sendPluginResult(pr);
                 });
     }
 
-    private void executeDialog(JSONArray args, CallbackContext callbackContext) throws JSONException {
-        Map<String, String> params = new HashMap<String, String>();
+    private void executeDialog(JSONArray args, CallbackContext callbackContext) {
+        Map<String, String> params = new HashMap<>();
         String method = null;
         JSONObject parameters;
 
@@ -566,7 +552,7 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
         }
     }
 
-    private void executeGetCurrentProfile(JSONArray args, CallbackContext callbackContext) {
+    private void executeGetCurrentProfile(CallbackContext callbackContext) {
         if (Profile.getCurrentProfile() == null) {
             callbackContext.error("No current profile.");
         } else {
@@ -576,7 +562,6 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
 
     private void executeGraph(JSONArray args, CallbackContext callbackContext) throws JSONException {
         lastGraphContext = callbackContext;
-        CallbackContext graphContext  = callbackContext;
         String requestMethod = null;
         if (args.length() < 3) {
             lastGraphRequestMethod = null;
@@ -586,26 +571,27 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
         }
         PluginResult pr = new PluginResult(PluginResult.Status.NO_RESULT);
         pr.setKeepCallback(true);
-        graphContext.sendPluginResult(pr);
+        callbackContext.sendPluginResult(pr);
 
         graphPath = args.getString(0);
         JSONArray arr = args.getJSONArray(1);
 
-        final Set<String> permissions = new HashSet<String>(arr.length());
+        final Set<String> permissions = new HashSet<>(arr.length());
         for (int i = 0; i < arr.length(); i++) {
             permissions.add(arr.getString(i));
         }
 
         if (permissions.size() == 0) {
-            makeGraphCall(graphContext, requestMethod);
+            makeGraphCall(callbackContext, requestMethod);
             return;
         }
 
         String declinedPermission = null;
 
         AccessToken accessToken = AccessToken.getCurrentAccessToken();
+        assert accessToken != null;
         if (accessToken.getPermissions().containsAll(permissions)) {
-            makeGraphCall(graphContext, requestMethod);
+            makeGraphCall(callbackContext, requestMethod);
             return;
         }
 
@@ -620,7 +606,7 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
         }
 
         if (declinedPermission != null) {
-            graphContext.error("This request needs declined permission: " + declinedPermission);
+            callbackContext.error("This request needs declined permission: " + declinedPermission);
 			return;
         }
 
@@ -657,21 +643,19 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
         if (args.length() == 1) {
             FacebookSdk.setDataProcessingOptions(options);
         } else {
-            String country = args.getString(1);
-            String state = args.getString(2);
             FacebookSdk.setDataProcessingOptions(options);
         }
         callbackContext.success();
     }
 
-    private void executeSetUserData(JSONArray args, CallbackContext callbackContext) throws JSONException {
+    private void executeSetUserData(JSONArray args, CallbackContext callbackContext) {
         if (args.length() == 0) {
             // Not enough parameters
             callbackContext.error("Invalid arguments");
             return;
         }
 
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, String> params = new HashMap<>();
         JSONObject parameters;
 
         try {
@@ -691,12 +675,12 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
             }
         }
 
-        logger.setUserData(params.get("em"), params.get("fn"), params.get("ln"), params.get("ph"), params.get("db"), params.get("ge"), params.get("ct"), params.get("st"), params.get("zp"), params.get("cn"));
+        AppEventsLogger.setUserData(params.get("em"), params.get("fn"), params.get("ln"), params.get("ph"), params.get("db"), params.get("ge"), params.get("ct"), params.get("st"), params.get("zp"), params.get("cn"));
         callbackContext.success();
     }
 
-    private void executeClearUserData(JSONArray args, CallbackContext callbackContext) {
-        logger.clearUserData();
+    private void executeClearUserData(CallbackContext callbackContext) {
+        AppEventsLogger.clearUserData();
         callbackContext.success();
     }
 
@@ -794,7 +778,7 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
         lastGraphRequestMethod = null;
 
         // Get the permissions
-        Set<String> permissions = new HashSet<String>(args.length());
+        Set<String> permissions = new HashSet<>(args.length());
 
         for (int i = 0; i < args.length(); i++) {
             permissions.add(args.getString(i));
@@ -812,7 +796,7 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
     }
 
     private void executeCheckHasCorrectPermissions(JSONArray args, CallbackContext callbackContext) throws JSONException {
-        Set<String> permissions = new HashSet<String>(args.length());
+        Set<String> permissions = new HashSet<>(args.length());
 
         for (int i = 0; i < args.length(); i++) {
             permissions.add(args.getString(i));
@@ -820,6 +804,7 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
 
         if (permissions.size() > 0) {
             AccessToken accessToken = AccessToken.getCurrentAccessToken();
+            assert accessToken != null;
             if (!accessToken.getPermissions().containsAll(permissions)) {
                 callbackContext.error("A permission has been denied");
                 return;
@@ -829,7 +814,7 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
         callbackContext.success("All permissions have been accepted");
     }
 
-    private void executeReauthorizeDataAccess(JSONArray args, CallbackContext callbackContext) throws JSONException {
+    private void executeReauthorizeDataAccess(CallbackContext callbackContext) {
         lastGraphContext = null;
         lastGraphRequestMethod = null;
 
@@ -879,7 +864,7 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
 
     private SharePhotoContent buildPhotoContent(Map<String, String> paramBundle) {
         SharePhoto.Builder photoBuilder = new SharePhoto.Builder();
-        if (!(paramBundle.get("photo_image") instanceof String)) {
+        if (paramBundle.get("photo_image") == null) {
             Log.d(TAG, "photo_image must be a string");
         } else {
             try {
@@ -953,17 +938,14 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
 
         String[] urlParts = graphPath.split("\\?");
         String graphAction = urlParts[0];
-        GraphRequest graphRequest = GraphRequest.newGraphPathRequest(AccessToken.getCurrentAccessToken(), graphAction, new GraphRequest.Callback() {
-            @Override
-            public void onCompleted(GraphResponse response) {
-                if (graphContext != null) {
-                    if (response.getError() != null) {
-                        graphContext.error(getFacebookRequestErrorResponse(response.getError()));
-                    } else {
-                        graphContext.success(response.getJSONObject());
-                    }
-                    graphPath = null;
+        GraphRequest graphRequest = GraphRequest.newGraphPathRequest(AccessToken.getCurrentAccessToken(), graphAction, response -> {
+            if (graphContext != null) {
+                if (response.getError() != null) {
+                    graphContext.error(getFacebookRequestErrorResponse(response.getError()));
+                } else {
+                    graphContext.success(response.getJSONObject());
                 }
+                graphPath = null;
             }
         });
 
@@ -980,7 +962,7 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
                 int splitPoint = query.indexOf("=");
                 if (splitPoint > 0) {
                     String key = query.substring(0, splitPoint);
-                    String value = query.substring(splitPoint + 1, query.length());
+                    String value = query.substring(splitPoint + 1);
                     params.putString(key, value);
                 }
             }
@@ -988,6 +970,11 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
 
         graphRequest.setParameters(params);
         graphRequest.executeAsync();
+    }
+
+    private String getStringByIdName(String idName) {
+        Resources res = cordova.getActivity().getApplicationContext().getResources();
+        return res.getString(res.getIdentifier(idName, "string", cordova.getActivity().getApplicationContext().getPackageName()));
     }
 
     /**
@@ -998,6 +985,7 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
         String response;
         final AccessToken accessToken = AccessToken.getCurrentAccessToken();
         if (hasAccessToken()) {
+            assert accessToken != null;
             long dataAccessExpirationTimeInterval = accessToken.getDataAccessExpirationTime().getTime() / 1000L;
             Date today = new Date();
             long expiresTimeInterval = (accessToken.getExpires().getTime() - today.getTime()) / 1000L;
