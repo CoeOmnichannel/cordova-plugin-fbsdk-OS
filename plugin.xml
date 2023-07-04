@@ -117,7 +117,7 @@
             <string>FACEBOOK_AUTO_LOG_APP_EVENTS_PLACEHOLDER</string>
         </config-file>
 
-        <config-file target="*-Info.plist" parent="FacebookHybridAppEvents">
+        <config-file target="*-Info.plist" parent="EventsFacebookHybridAppEvents">
             <string>$FACEBOOK_HYBRID_APP_EVENTS</string>
         </config-file>
 

@@ -32,6 +32,15 @@
 - (void)pluginInitialize {
     NSLog(@"Starting Facebook Connect plugin");
 
+    
+    //Force SDK Variables variables
+    
+    FBSDKSettings.sharedSettings.appID = NSBundle.mainBundle.infoDictionary[@"EventsFacebookAppID"];
+    FBSDKSettings.sharedSettings.clientToken = NSBundle.mainBundle.infoDictionary[@"EventsFacebookClientToken"];
+    FBSDKSettings.sharedSettings.displayName = NSBundle.mainBundle.infoDictionary[@"EventsFacebookDisplayName"];
+    FBSDKSettings.sharedSettings.autoLogAppEventsEnabled = NSBundle.mainBundle.infoDictionary[@"EventsFacebookHybridAppEvents"];
+    // FacebookSdk.setAdvertiserIDCollectionEnabled(getStringByIdName("events_fb_advertiser_id_collection_enabled").equals("true"));
+    
     // Add notification listener for tracking app activity with FB Events
     [[NSNotificationCenter defaultCenter] addObserver:self
                                              selector:@selector(applicationDidFinishLaunching:)
