@@ -97,16 +97,16 @@
         <header-file src="src/ios/EventsFacebookConnectPlugin.h" />
         <source-file src="src/ios/EventsFacebookConnectPlugin.m" />
 
-        <config-file target="*-Info.plist" parent="FacebookAppID">
-            <string>$APP_ID</string>
+        <config-file target="*-Info.plist" parent="EventsFacebookAppID">
+            <string>$EVENTS_APP_ID</string>
         </config-file>
 
-        <config-file target="*-Info.plist" parent="FacebookClientToken">
-            <string>$CLIENT_TOKEN</string>
+        <config-file target="*-Info.plist" parent="EventsFacebookClientToken">
+            <string>$EVENTS_CLIENT_TOKEN</string>
         </config-file>
 
-        <config-file target="*-Info.plist" parent="FacebookDisplayName">
-            <string>$APP_NAME</string>
+        <config-file target="*-Info.plist" parent="EventsFacebookDisplayName">
+            <string>$EVENTS_APP_NAME</string>
         </config-file>
 
         <config-file target="*-Info.plist" parent="FacebookUrlSchemeSuffix">

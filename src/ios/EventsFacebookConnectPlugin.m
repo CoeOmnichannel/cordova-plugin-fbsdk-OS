@@ -1,5 +1,5 @@
 //
-//  FacebookConnectPlugin.m
+//  EventsFacebookConnectPlugin.m
 //  GapFacebookConnect
 //
 //  Created by Jesse MacFadyen on 11-04-22.
@@ -10,10 +10,10 @@
 //  Copyright 2011 Nitobi, Mathijs de Bruin. All rights reserved.
 //
 
-#import "FacebookConnectPlugin.h"
+#import "EventsFacebookConnectPlugin.h"
 #import <objc/runtime.h>
 
-@interface FacebookConnectPlugin ()
+@interface EventsFacebookConnectPlugin ()
 
 @property (strong, nonatomic) NSString* dialogCallbackId;
 @property (strong, nonatomic) FBSDKLoginManager *loginManager;
@@ -27,7 +27,7 @@
 - (void)enableHybridAppEvents;
 @end
 
-@implementation FacebookConnectPlugin
+@implementation EventsFacebookConnectPlugin
 
 - (void)pluginInitialize {
     NSLog(@"Starting Facebook Connect plugin");
@@ -1023,9 +1023,9 @@
 
 #pragma mark - AppDelegate Overrides
 
-@implementation AppDelegate (FacebookConnectPlugin)
+@implementation AppDelegate (EventsFacebookConnectPlugin)
 
-void FBMethodSwizzle(Class c, SEL originalSelector) {
+void EventsFBMethodSwizzle(Class c, SEL originalSelector) {
     NSString *selectorString = NSStringFromSelector(originalSelector);
     SEL newSelector = NSSelectorFromString([@"swizzled_" stringByAppendingString:selectorString]);
     SEL noopSelector = NSSelectorFromString([@"noop_" stringByAppendingString:selectorString]);
@@ -1042,7 +1042,7 @@ void FBMethodSwizzle(Class c, SEL originalSelector) {
 
 + (void)load
 {
-    FBMethodSwizzle([self class], @selector(application:openURL:options:));
+    EventsFBMethodSwizzle([self class], @selector(application:openURL:options:));
 }
 
 - (BOOL)swizzled_application:(UIApplication *)application openURL:(NSURL *)url options:(NSDictionary<NSString *,id> *)options {
