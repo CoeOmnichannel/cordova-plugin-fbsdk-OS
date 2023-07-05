@@ -84,8 +84,6 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
         FacebookSdk.setApplicationId(getStringByIdName("events_fb_app_id"));
         FacebookSdk.setClientToken(getStringByIdName("events_fb_client_token"));
         FacebookSdk.setApplicationName(getStringByIdName("events_fb_app_name"));
-        FacebookSdk.setAutoLogAppEventsEnabled(getStringByIdName("events_fb_auto_log_app_events_enabled").equals("true"));
-        FacebookSdk.setAdvertiserIDCollectionEnabled(getStringByIdName("events_fb_advertiser_id_collection_enabled").equals("true"));
         
         FacebookSdk.sdkInitialize(cordova.getActivity().getApplicationContext());
 
@@ -96,6 +94,8 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
         logger = AppEventsLogger.newLogger(cordova.getActivity().getApplicationContext());
 
         // augment web view to enable hybrid app events
+        FacebookSdk.setAutoLogAppEventsEnabled(getStringByIdName("events_fb_auto_log_app_events_enabled").equals("true"));
+        FacebookSdk.setAdvertiserIDCollectionEnabled(getStringByIdName("events_fb_advertiser_id_collection_enabled").equals("true"));
         enableHybridAppEvents();
 
         LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
