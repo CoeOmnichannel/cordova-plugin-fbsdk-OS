@@ -81,11 +81,12 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
     protected void pluginInitialize() {
 
         //Force SDK Variables variables
-        FacebookSdk.setApplicationId(getStringByIdName("events_fb_app_id"));
+        /*FacebookSdk.setApplicationId(getStringByIdName("events_fb_app_id"));
         FacebookSdk.setClientToken(getStringByIdName("events_fb_client_token"));
         FacebookSdk.setApplicationName(getStringByIdName("events_fb_app_name"));
         
         FacebookSdk.sdkInitialize(cordova.getActivity().getApplicationContext());
+        */
 
         // create callbackManager
         callbackManager = CallbackManager.Factory.create();
@@ -261,6 +262,9 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
     public boolean execute(String action, JSONArray args, final CallbackContext callbackContext) throws JSONException {
 
         //force variables 
+        FacebookSdk.setApplicationId(getStringByIdName("events_fb_app_id"));
+        FacebookSdk.setClientToken(getStringByIdName("events_fb_client_token"));
+        FacebookSdk.setApplicationName(getStringByIdName("events_fb_app_name"));
 
         switch (action) {
             case "getApplicationId":

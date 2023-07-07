@@ -32,13 +32,6 @@
 - (void)pluginInitialize {
     NSLog(@"Starting Facebook Connect plugin");
 
-    
-    //Force SDK Variables variables
-    
-    FBSDKSettings.sharedSettings.appID = NSBundle.mainBundle.infoDictionary[@"EventsFacebookAppID"];
-    FBSDKSettings.sharedSettings.clientToken = NSBundle.mainBundle.infoDictionary[@"EventsFacebookClientToken"];
-    FBSDKSettings.sharedSettings.displayName = NSBundle.mainBundle.infoDictionary[@"EventsFacebookDisplayName"];
-    FBSDKSettings.sharedSettings.autoLogAppEventsEnabled = NSBundle.mainBundle.infoDictionary[@"EventsFacebookHybridAppEvents"];
     // FacebookSdk.setAdvertiserIDCollectionEnabled(getStringByIdName("events_fb_advertiser_id_collection_enabled").equals("true"));
     
     // Add notification listener for tracking app activity with FB Events
@@ -252,6 +245,14 @@
 }
 
 - (void)logEvent:(CDVInvokedUrlCommand *)command {
+
+    // Força as variáveis do plugin de eventos
+    FBSDKSettings.sharedSettings.appID = NSBundle.mainBundle.infoDictionary[@"EventsFacebookAppID"];
+    FBSDKSettings.sharedSettings.clientToken = NSBundle.mainBundle.infoDictionary[@"EventsFacebookClientToken"];
+    FBSDKSettings.sharedSettings.displayName = NSBundle.mainBundle.infoDictionary[@"EventsFacebookDisplayName"];
+    FBSDKSettings.sharedSettings.autoLogAppEventsEnabled = NSBundle.mainBundle.infoDictionary[@"EventsFacebookHybridAppEvents"];
+
+
     if ([command.arguments count] == 0) {
         // Not enough arguments
         [self returnInvalidArgsError:command.callbackId];
