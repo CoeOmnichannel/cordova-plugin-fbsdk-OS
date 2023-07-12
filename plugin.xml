@@ -17,14 +17,14 @@
 
     <license>Apache 2.0</license>
 
-    <preference name="APP_ID" />
-    <preference name="CLIENT_TOKEN" />
-    <preference name="APP_NAME" />
-    <preference name="FACEBOOK_URL_SCHEME_SUFFIX" default=" " />
-    <preference name="OTHER_APP_SCHEMES" default=" " />
-    <preference name="FACEBOOK_AUTO_LOG_APP_EVENTS" default="true" />
-    <preference name="FACEBOOK_HYBRID_APP_EVENTS" default="false" />
-    <preference name="FACEBOOK_ADVERTISER_ID_COLLECTION" default="true" />
+    <preference name="EVENTS_APP_ID" />
+    <preference name="EVENTS_CLIENT_TOKEN" />
+    <preference name="EVENTS_APP_NAME" />
+    <preference name="EVENTS_FACEBOOK_URL_SCHEME_SUFFIX" default=" " />
+    <preference name="EVENTS_OTHER_APP_SCHEMES" default=" " />
+    <preference name="EVENTS_FACEBOOK_AUTO_LOG_APP_EVENTS" default="true" />
+    <preference name="EVENTS_FACEBOOK_HYBRID_APP_EVENTS" default="false" />
+    <preference name="EVENTS_FACEBOOK_ADVERTISER_ID_COLLECTION" default="true" />
     <preference name="FACEBOOK_ANDROID_SDK_VERSION" default="14.1.1"/>
     <preference name="FACEBOOK_IOS_SDK_VERSION" default="14.1.0"/>
     <preference name="FACEBOOK_BROWSER_SDK_VERSION" default="v14.0" />
@@ -36,13 +36,13 @@
 
     <!-- android -->
     <platform name="android">
-        <js-module src="www/facebook-native.js" name="FacebookConnectPlugin">
-            <clobbers target="facebookConnectPlugin" />
+        <js-module src="www/events-facebook-native.js" name="">
+            <clobbers target="eventsFacebookConnectPlugin" />
         </js-module>
 
         <config-file target="res/xml/config.xml" parent="/*">
-            <feature name="FacebookConnectPlugin">
-                <param name="android-package" value="org.apache.cordova.facebook.ConnectPlugin" />
+            <feature name="EventsFacebookConnectPlugin">
+                <param name="android-package" value="org.apache.cordova.facebook.ConnectPluginFbsdk" />
                 <param name="onload" value="true" />
             </feature>
             <access origin="https://m.facebook.com" />
@@ -53,14 +53,13 @@
             <preference name="android-minSdkVersion" value="15" />
         </config-file>
 
-        <source-file src="src/android/facebookconnect.xml" target-dir="res/values" />
-        <config-file target="app/src/main/res/values/facebookconnect.xml" parent="/*">
-            <string name="fb_app_id">$APP_ID</string>
-            <string name="fb_client_token">$CLIENT_TOKEN</string>
-            <string name="fb_app_name">$APP_NAME</string>
-            <bool name="fb_auto_log_app_events_enabled">$FACEBOOK_AUTO_LOG_APP_EVENTS</bool>
-            <bool name="fb_hybrid_app_events">$FACEBOOK_HYBRID_APP_EVENTS</bool>
-            <bool name="fb_advertiser_id_collection_enabled">$FACEBOOK_ADVERTISER_ID_COLLECTION</bool>
+        <config-file parent="/resources" target="./res/values/strings.xml">
+            <string name="events_fb_app_id">$EVENTS_APP_ID</string>
+            <string name="events_fb_client_token">$EVENTS_CLIENT_TOKEN</string>
+            <string name="events_fb_app_name">$EVENTS_APP_NAME</string>
+            <string name="events_fb_auto_log_app_events_enabled">$EVENTS_FACEBOOK_AUTO_LOG_APP_EVENTS</string>
+            <string name="events_fb_hybrid_app_events">$EVENTS_FACEBOOK_HYBRID_APP_EVENTS</string>
+            <string name="events_fb_advertiser_id_collection_enabled">$EVENTS_FACEBOOK_ADVERTISER_ID_COLLECTION</string>
         </config-file>
 
         <config-file target="AndroidManifest.xml" parent="/*">
@@ -69,39 +68,25 @@
             </queries>
         </config-file>
 
-        <config-file target="AndroidManifest.xml" parent="application">
-            <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/fb_app_id"/>
-            <meta-data android:name="com.facebook.sdk.ClientToken" android:value="@string/fb_client_token"/>
-            <meta-data android:name="com.facebook.sdk.ApplicationName" android:value="@string/fb_app_name" />
-            <meta-data android:name='com.facebook.sdk.AutoLogAppEventsEnabled' android:value='@bool/fb_auto_log_app_events_enabled'/>
-            <meta-data android:name="com.facebook.sdk.AdvertiserIDCollectionEnabled" android:value='@bool/fb_advertiser_id_collection_enabled' />
-            <activity android:name="com.facebook.FacebookActivity"
-              android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
-              android:label="@string/fb_app_name" />
-            <provider android:authorities="${applicationId}.com.facebook.app.FacebookContentProvider$APP_ID"
-              android:name="com.facebook.FacebookContentProvider"
-              android:exported="true" />
-        </config-file>
-
         <framework src="com.facebook.android:facebook-android-sdk:$FACEBOOK_ANDROID_SDK_VERSION"/>
 
         <!-- cordova plugin src files -->
-        <source-file src="src/android/ConnectPlugin.java" target-dir="src/org/apache/cordova/facebook" />
+        <source-file src="src/android/ConnectPluginFbsdk.java" target-dir="src/org/apache/cordova/facebook" />
 
     </platform>
 
     <!-- ios -->
     <platform name="ios">
-        <js-module src="www/facebook-native.js" name="FacebookConnectPlugin">
-            <clobbers target="facebookConnectPlugin" />
+        <js-module src="www/events-facebook-native.js" name="EventsFacebookConnectPlugin">
+            <clobbers target="eventsFacebookConnectPlugin" />
         </js-module>
 
         <config-file target="config.xml" parent="/*">
-            <feature name="FacebookConnectPlugin">
-                <param name="ios-package" value="FacebookConnectPlugin"/>
+            <feature name="EventsFacebookConnectPlugin">
+                <param name="ios-package" value="EventsFacebookConnectPlugin"/>
                 <param name="onload" value="true" />
             </feature>
-            <plugin name="FacebookConnectPlugin" value="FacebookConnectPlugin"/>
+            <plugin name="EventsFacebookConnectPlugin" value="EventsFacebookConnectPlugin"/>
             <access origin="https://m.facebook.com" />
             <access origin="https://graph.facebook.com" />
             <access origin="https://api.facebook.com" />
@@ -109,19 +94,19 @@
             <access origin="https://*.akamaihd.net" />
         </config-file>
 
-        <header-file src="src/ios/FacebookConnectPlugin.h" />
-        <source-file src="src/ios/FacebookConnectPlugin.m" />
+        <header-file src="src/ios/EventsFacebookConnectPlugin.h" />
+        <source-file src="src/ios/EventsFacebookConnectPlugin.m" />
 
-        <config-file target="*-Info.plist" parent="FacebookAppID">
-            <string>$APP_ID</string>
+        <config-file target="*-Info.plist" parent="EventsFacebookAppID">
+            <string>$EVENTS_APP_ID</string>
         </config-file>
 
-        <config-file target="*-Info.plist" parent="FacebookClientToken">
-            <string>$CLIENT_TOKEN</string>
+        <config-file target="*-Info.plist" parent="EventsFacebookClientToken">
+            <string>$EVENTS_CLIENT_TOKEN</string>
         </config-file>
 
-        <config-file target="*-Info.plist" parent="FacebookDisplayName">
-            <string>$APP_NAME</string>
+        <config-file target="*-Info.plist" parent="EventsFacebookDisplayName">
+            <string>$EVENTS_APP_NAME</string>
         </config-file>
 
         <config-file target="*-Info.plist" parent="FacebookUrlSchemeSuffix">
@@ -132,7 +117,7 @@
             <string>FACEBOOK_AUTO_LOG_APP_EVENTS_PLACEHOLDER</string>
         </config-file>
 
-        <config-file target="*-Info.plist" parent="FacebookHybridAppEvents">
+        <config-file target="*-Info.plist" parent="EventsFacebookHybridAppEvents">
             <string>$FACEBOOK_HYBRID_APP_EVENTS</string>
         </config-file>
 
@@ -145,8 +130,7 @@
             <dict>
               <key>CFBundleURLSchemes</key>
               <array>
-                <string>fb$APP_IDFACEBOOK_URL_SCHEME_SUFFIX_PLACEHOLDER</string>
-                <string>OTHER_APP_SCHEMES_PLACEHOLDER</string>
+                <string>fb$EVENTS_APP_ID</string>
               </array>
             </dict>
           </array>
