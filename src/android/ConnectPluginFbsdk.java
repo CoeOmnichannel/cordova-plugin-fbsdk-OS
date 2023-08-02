@@ -27,9 +27,13 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
     @Override
     protected void pluginInitialize() {
 
-        FacebookSdk.setApplicationId(getStringByIdName("events_fb_app_id"));
+        FacebookSdk.setApplicationId(Objects.requireNonNull(getStringByIdName("events_fb_app_id")));
         FacebookSdk.setClientToken(getStringByIdName("events_fb_client_token"));
         FacebookSdk.setApplicationName(getStringByIdName("events_fb_app_name"));
+
+        if(getStringByIdName("fb_app_id") == null || Objects.equals(getStringByIdName("fb_app_id"), "")) {
+            FacebookSdk.sdkInitialize(cordova.getActivity().getApplicationContext());
+        }
 
         // augment web view to enable hybrid app events
         FacebookSdk.setAutoLogAppEventsEnabled(getStringByIdName("events_fb_auto_log_app_events_enabled").equals("true"));
@@ -188,7 +192,12 @@ public class ConnectPluginFbsdk extends CordovaPlugin {
 
 
     private String getStringByIdName(String idName) {
-        Resources res = cordova.getActivity().getApplicationContext().getResources();
-        return res.getString(res.getIdentifier(idName, "string", cordova.getActivity().getApplicationContext().getPackageName()));
+        try{
+            Resources res = cordova.getActivity().getApplicationContext().getResources();
+            return res.getString(res.getIdentifier(idName, "string", cordova.getActivity().getApplicationContext().getPackageName()));
+        } catch (Exception e) {
+            Log.d(TAG, "Resource " + idName + "not found");
+        }
+        return null;
     }
 }
